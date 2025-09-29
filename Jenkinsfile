@@ -2,71 +2,63 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_COMPOSE_FILE = 'docker-compose.test.yml'
+        DOCKER_COMPOSE = 'docker-compose -f docker-compose.test.yml'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                echo "📥 Checking out code..."
+                echo "📥 Checking out source code..."
                 checkout scm
             }
         }
 
-        stage('Build') {
+        stage('Install') {
             steps {
-                echo "🐳 Building Docker images..."
-                sh "docker-compose -f ${DOCKER_COMPOSE_FILE} build"
+                echo "📦 Installing dependencies..."
+                sh 'npm install'
+            }
+        }
+
+        stage('Lint') {
+            steps {
+                echo "🔍 Running ESLint..."
+                sh 'npx eslint . || true'  // don’t fail pipeline on lint warnings
             }
         }
 
         stage('Test') {
             steps {
-                echo '🧪 Running Jest tests with Docker Compose...'
-                sh '''
-                # Clean up any previous containers
-                docker-compose -f docker-compose.test.yml down || true
-
-                # Build and run the test stack
-                docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
-
-                # Get exit code from test container
-                TEST_EXIT_CODE=$(docker wait $(docker ps -aqf "name=bookhive"))
-                docker-compose -f docker-compose.test.yml down
-
-                # Exit with the test container's status
-                exit $TEST_EXIT_CODE
-                '''
+                echo "🧪 Running tests in Docker..."
+                sh """
+                  ${DOCKER_COMPOSE} down -v || true
+                  ${DOCKER_COMPOSE} up --build --abort-on-container-exit
+                """
             }
-        }
-
-
-        stage('Code Quality') {
-            steps {
-                echo "🔍 Running ESLint..."
-                sh "docker run --rm bookhive npm run lint || echo 'Lint warnings found'"
+            post {
+                always {
+                    echo "🧹 Cleaning up Docker containers..."
+                    sh "${DOCKER_COMPOSE} down -v || true"
+                }
             }
         }
 
         stage('Deploy') {
+            when {
+                branch 'main'
+            }
             steps {
-                echo "🚀 Deploying BookHive (placeholder step)..."
-                // Example: copy files, restart service, or push image
-                // sh "docker-compose -f docker-compose.prod.yml up -d"
+                echo "🚀 Deployment stage (to be configured)..."
             }
         }
     }
 
     post {
-        always {
-            echo "🧹 Cleaning up containers..."
-            sh "docker-compose -f ${DOCKER_COMPOSE_FILE} down -v || true"
+        failure {
+            echo "❌ Pipeline failed. Check logs above."
         }
         success {
             echo "✅ Pipeline completed successfully!"
-        }
-        failure {
-            echo "❌ Pipeline failed. Please check logs."
         }
     }
 }

@@ -14,4 +14,12 @@ services:
       MONGODB_URI_TEST: mongodb://mongo:27017/bookhive_test
     depends_on:
       - mongo
-    command: npm test
+    command: >
+      sh -c "
+        echo '⏳ Waiting for MongoDB...';
+        until nc -z mongo 27017; do
+          sleep 2;
+        done;
+        echo '✅ MongoDB is ready, starting tests...';
+        npm test
+      "
