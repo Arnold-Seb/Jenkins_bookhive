@@ -2,48 +2,52 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "bookhive:latest"
+        DOCKER_COMPOSE_FILE = 'docker-compose.test.yml'
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                echo "📥 Checking out code..."
+                checkout scm
+            }
+        }
+
         stage('Build') {
             steps {
-                echo "📦 Installing dependencies and building BookHive..."
-                sh 'npm install'
-                sh 'npm run build || echo "No build script, skipping..."'
+                echo "🐳 Building Docker images..."
+                sh "docker-compose -f ${DOCKER_COMPOSE_FILE} build"
             }
         }
 
         stage('Test') {
             steps {
-                echo "🧪 Starting MongoDB for tests..."
-                sh 'mongod --fork --logpath /var/log/mongod.log --dbpath /var/lib/mongo || true'
-                sh 'sleep 5'
-
-                echo "🧪 Running full Jest test suite..."
-                sh 'MONGODB_URI_TEST="mongodb://127.0.0.1:27017/bookhive_test" npm test'
+                echo "🧪 Running tests inside Docker..."
+                sh "docker-compose -f ${DOCKER_COMPOSE_FILE} up --abort-on-container-exit --exit-code-from bookhive"
             }
         }
 
-
-
         stage('Code Quality') {
             steps {
-                echo "🔎 Running ESLint checks..."
-                sh 'npx eslint . || true'
+                echo "🔍 Running ESLint..."
+                sh "docker run --rm bookhive npm run lint || echo 'Lint warnings found'"
             }
         }
 
         stage('Deploy') {
             steps {
-                echo "🚀 Building Docker image and deploying BookHive..."
-                sh 'docker build -t $DOCKER_IMAGE .'
-                sh 'docker run -d -p 3000:3000 --name bookhive $DOCKER_IMAGE || echo "Already running"'
+                echo "🚀 Deploying BookHive (placeholder step)..."
+                // Example: copy files, restart service, or push image
+                // sh "docker-compose -f docker-compose.prod.yml up -d"
             }
         }
     }
 
     post {
+        always {
+            echo "🧹 Cleaning up containers..."
+            sh "docker-compose -f ${DOCKER_COMPOSE_FILE} down -v || true"
+        }
         success {
             echo "✅ Pipeline completed successfully!"
         }
