@@ -17,18 +17,14 @@ pipeline {
         stage('Test') {
             steps {
                 echo "🧪 Starting MongoDB for tests..."
-                sh '''
-                    docker ps | grep mongo && docker stop mongo && docker rm mongo || true
-                    docker run -d -p 27017:27017 --name mongo mongo:6
-                '''
-        
-                // Wait for Mongo to fully start
-                sh 'sleep 10'
-        
+                sh 'mongod --fork --logpath /var/log/mongod.log --dbpath /var/lib/mongo || true'
+                sh 'sleep 5'
+
                 echo "🧪 Running full Jest test suite..."
-                sh 'MONGODB_URI_TEST="mongodb://localhost:27017/bookhive_test" npm test'
+                sh 'MONGODB_URI_TEST="mongodb://127.0.0.1:27017/bookhive_test" npm test'
             }
         }
+
 
 
         stage('Code Quality') {
