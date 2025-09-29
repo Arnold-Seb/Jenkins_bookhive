@@ -8,7 +8,7 @@
     "dev": "nodemon src/app.js",
     "start": "node src/app.js",
     "seed": "node scripts/seed.js",
-    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand"
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --detectOpenHandles"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

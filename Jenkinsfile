@@ -22,6 +22,9 @@ pipeline {
                     docker run -d -p 27017:27017 --name mongo mongo:6
                 '''
         
+                // Wait for Mongo to fully start
+                sh 'sleep 10'
+        
                 echo "🧪 Running full Jest test suite..."
                 sh 'MONGODB_URI_TEST="mongodb://localhost:27017/bookhive_test" npm test'
             }
