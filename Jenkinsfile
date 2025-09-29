@@ -23,7 +23,7 @@ pipeline {
                 '''
         
                 echo "🧪 Running full Jest test suite..."
-                sh 'npm test'
+                sh 'MONGODB_URI_TEST="mongodb://localhost:27017/bookhive_test" npm test'
             }
         }
 
