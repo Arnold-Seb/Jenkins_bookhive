@@ -22,8 +22,21 @@ pipeline {
 
         stage('Test') {
             steps {
-                echo "🧪 Running tests inside Docker..."
-                sh "docker-compose -f docker-compose.test.yml up --abort-on-container-exit --exit-code-from bookhive"
+                echo '🧪 Running Jest tests with Docker Compose...'
+                sh '''
+                # Clean up any previous containers
+                docker-compose -f docker-compose.test.yml down || true
+
+                # Build and run the test stack
+                docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
+
+                # Get exit code from test container
+                TEST_EXIT_CODE=$(docker wait $(docker ps -aqf "name=bookhive"))
+                docker-compose -f docker-compose.test.yml down
+
+                # Exit with the test container's status
+                exit $TEST_EXIT_CODE
+                '''
             }
         }
 
