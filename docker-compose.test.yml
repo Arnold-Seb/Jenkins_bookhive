@@ -1,30 +1,17 @@
-version: "3.9"
+version: "3.8"
 services:
   mongo:
-    image: mongo:6.0
-    container_name: mongo-test
+    image: mongo:7
     ports:
       - "27017:27017"
-    networks:
-      - bookhive-net
+    environment:
+      MONGO_INITDB_DATABASE: bookhive_test
 
   bookhive:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: bookhive-test
+    build: .
+    environment:
+      NODE_ENV: test
+      MONGODB_URI_TEST: mongodb://mongo:27017/bookhive_test
     depends_on:
       - mongo
-    environment:
-      - NODE_ENV=test
-      - MONGODB_URI_TEST=mongodb://mongo:27017/bookhive_test
-      - JWT_SECRET=mystrongsecret
-    command: >
-      sh -c "npm install &&
-             npm test"
-    networks:
-      - bookhive-net
-
-networks:
-  bookhive-net:
-    driver: bridge
+    command: npm test

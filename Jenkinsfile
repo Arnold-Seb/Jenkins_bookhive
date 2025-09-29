@@ -23,9 +23,10 @@ pipeline {
         stage('Test') {
             steps {
                 echo "🧪 Running tests inside Docker..."
-                sh "docker-compose -f ${DOCKER_COMPOSE_FILE} up --abort-on-container-exit --exit-code-from bookhive"
+                sh "docker-compose -f docker-compose.test.yml up --abort-on-container-exit --exit-code-from bookhive"
             }
         }
+
 
         stage('Code Quality') {
             steps {
