@@ -16,10 +16,17 @@ pipeline {
 
         stage('Test') {
             steps {
-                echo "🧪 Running Jest/Mocha tests..."
+                echo "🧪 Starting MongoDB for tests..."
+                sh '''
+                    docker ps | grep mongo && docker stop mongo && docker rm mongo || true
+                    docker run -d -p 27017:27017 --name mongo mongo:6
+                '''
+        
+                echo "🧪 Running full Jest test suite..."
                 sh 'npm test'
             }
         }
+
 
         stage('Code Quality') {
             steps {
