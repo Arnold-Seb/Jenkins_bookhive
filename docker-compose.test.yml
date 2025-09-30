@@ -1,7 +1,12 @@
-version: "3.8"
+version: "3.9"
+
 services:
   mongo:
-    image: mongo:7
+    image: mongo:6
+    container_name: bookhive-mongo
+    restart: always
+    ports:
+      - "27017:27017"   # Expose Mongo for Jenkins tests
     environment:
       MONGO_INITDB_DATABASE: bookhive_test
     healthcheck:
@@ -12,10 +17,11 @@ services:
 
   bookhive:
     build: .
-    environment:
-      NODE_ENV: test
-      MONGODB_URI_TEST: mongodb://mongo:27017/bookhive_test
+    container_name: bookhive-app
     depends_on:
       mongo:
         condition: service_healthy
-    command: npm test
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/bookhive
+    ports:
+      - "3000:3000"
