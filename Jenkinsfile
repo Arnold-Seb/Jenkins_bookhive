@@ -26,7 +26,7 @@ pipeline {
         stage('Code Quality') {
             steps {
                 echo "🔍 Running ESLint..."
-                sh 'npx eslint src || true'
+                sh 'npx --yes eslint src || true'
             }
         }
 
