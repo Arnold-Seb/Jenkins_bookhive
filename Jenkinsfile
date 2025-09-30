@@ -24,7 +24,7 @@ pipeline {
         stage('Start Services') {
             steps {
                 echo "🚀 Starting services with Docker Compose..."
-                sh 'docker compose -f docker-compose.test.yml up -d --build'
+                sh 'docker compose -f $WORKSPACE/docker-compose.test.yml up -d --build'
             }
         }
 
@@ -52,7 +52,7 @@ pipeline {
         stage('Stop Services') {
             steps {
                 echo "🛑 Stopping services..."
-                sh 'docker compose -f docker-compose.test.yml down -v || true'
+                sh 'docker compose -f $WORKSPACE/docker-compose.test.yml down -v || true'
             }
         }
 
