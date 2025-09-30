@@ -17,3 +17,14 @@ services:
     environment:
       - MONGODB_URI_TEST=mongodb://mongo:27017/bookhive_test
     command: npm test
+
+  bookhive:
+    build: .
+    container_name: bookhive-pipeline-v2-bookhive
+    depends_on:
+      - mongo
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/bookhive
+    command: npm start
+    ports:
+      - "3000:3000"
