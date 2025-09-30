@@ -4,6 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = "bookhive-app"
         IMAGE_TAG = "latest"
+        DOCKERHUB_REPO = "arnoldseb/bookhive-app"
     }
 
     stages {
@@ -59,16 +60,26 @@ pipeline {
             steps {
                 echo "📦 Building application Docker image..."
                 sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
-                sh 'docker images ${IMAGE_NAME}:${IMAGE_TAG}'
             }
         }
 
         stage('Deploy') {
             steps {
-                echo "🚀 Deploy stage (placeholder - push to registry or deploy to server)"
-                // Example if pushing to DockerHub:
-                // sh 'echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin'
-                // sh 'docker push ${IMAGE_NAME}:${IMAGE_TAG}'
+                echo "🚀 Pushing Docker image to DockerHub..."
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    
+                    // Tag and push :latest
+                    sh 'docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERHUB_REPO}:${IMAGE_TAG}'
+                    sh 'docker push ${DOCKERHUB_REPO}:${IMAGE_TAG}'
+
+                    // Tag and push with Git commit SHA
+                    script {
+                        COMMIT_SHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                        sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERHUB_REPO}:${COMMIT_SHA}"
+                        sh "docker push ${DOCKERHUB_REPO}:${COMMIT_SHA}"
+                    }
+                }
             }
         }
     }
