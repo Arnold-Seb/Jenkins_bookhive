@@ -17,15 +17,11 @@ pipeline {
 
         stage('Test') {
             steps {
-                echo "🧪 Running Jest tests..."
-                sh '''
-                docker compose -f docker-compose.test.yml up -d mongo
-                sleep 10
-                MONGODB_URI_TEST=mongodb://127.0.0.1:27017/bookhive_test npm test
-                docker compose -f docker-compose.test.yml down -v
-                '''
+                echo "🧪 Running tests inside docker-compose..."
+                sh 'docker compose -f docker-compose.test.yml run --rm test-runner'
             }
         }
+
 
         stage('Code Quality') {
             steps {
