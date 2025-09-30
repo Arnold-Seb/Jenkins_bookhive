@@ -16,56 +16,23 @@ pipeline {
 
         stage('Start Services') {
             steps {
-                echo '🚀 Starting MongoDB + BookHive (test mode)...'
+                echo "🚀 Starting MongoDB and app test container with docker compose..."
                 sh 'docker compose -f docker-compose.test.yml up -d --build'
-
-                // Wait for MongoDB to be ready
-                script {
-                    echo '⏳ Waiting for MongoDB...'
-                    sh '''
-                        for i in {1..30}; do
-                          mongo_container=$(docker ps -qf "ancestor=mongo:7")
-                          if [ -n "$mongo_container" ] && docker exec "$mongo_container" \
-                              mongosh --eval "db.adminCommand('ping')" >/dev/null 2>&1; then
-                            echo "✅ MongoDB is ready!"
-                            exit 0
-                          fi
-                          echo "Waiting for MongoDB... ($i/30)"
-                          sleep 5
-                        done
-                        echo "❌ MongoDB did not become ready in time"
-                        exit 1
-                    '''
-                }
-
-                // Wait for BookHive app to be ready
-                script {
-                    echo '⏳ Waiting for BookHive service...'
-                    sh '''
-                        for i in {1..30}; do
-                          if curl -s http://localhost:3000 >/dev/null 2>&1; then
-                            echo "✅ BookHive service is ready!"
-                            exit 0
-                          fi
-                          echo "Waiting for BookHive... ($i/30)"
-                          sleep 5
-                        done
-                        echo "❌ BookHive service did not become ready in time"
-                        exit 1
-                    '''
-                }
+                // Wait a few seconds for Mongo to be ready
+                sh 'sleep 10'
             }
         }
 
-        stage('Run Tests') {
+        stage('Test') {
             steps {
-                sh 'MONGODB_URI_TEST=mongodb://localhost:27017/bookhive_test npm test'
+                echo "🧪 Running Jest tests against test DB..."
+                sh 'docker compose -f docker-compose.test.yml exec -T bookhive npm test'
             }
         }
 
         stage('Stop Services') {
             steps {
-                echo '🛑 Stopping test services...'
+                echo "🛑 Stopping test containers..."
                 sh 'docker compose -f docker-compose.test.yml down || true'
             }
         }
