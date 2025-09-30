@@ -28,29 +28,6 @@ pipeline {
             }
         }
 
-        stage('Wait for MongoDB') {
-            steps {
-                echo "⏳ Waiting for MongoDB to become healthy..."
-                sh '''
-                # Get container ID for the "mongo" service
-                CONTAINER=$(docker compose -f $WORKSPACE/docker-compose.test.yml ps -q mongo)
-
-                for i in {1..30}; do
-                  STATUS=$(docker inspect --format='{{.State.Health.Status}}' $CONTAINER || echo "starting")
-                  if [ "$STATUS" = "healthy" ]; then
-                    echo "✅ MongoDB is healthy!"
-                    exit 0
-                  fi
-                  echo "Still waiting... ($i) - status=$STATUS"
-                  sleep 2
-                done
-
-                echo "❌ MongoDB did not become healthy in time"
-                exit 1
-                '''
-            }
-        }
-
         stage('Test') {
             steps {
                 echo "🧪 Running Jest tests..."
