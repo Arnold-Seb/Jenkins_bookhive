@@ -4,20 +4,25 @@ export default [
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
-    },
-    env: {
-      node: true,
-      es2021: true,
-      jest: true,   // enables Jest globals like describe/test
+      globals: {
+        process: "readonly",
+        __dirname: "readonly",
+        console: "readonly",
+        require: "readonly",
+        module: "readonly",
+        describe: "readonly", // Jest globals
+        test: "readonly",
+        expect: "readonly",
+      },
     },
     rules: {
-      semi: ["error", "always"],          // enforce semicolons
-      quotes: ["error", "double"],        // enforce double quotes
-      "no-unused-vars": ["warn"],         // warn for unused variables
-      "no-undef": "error",                // error for undefined variables
-      "no-console": "off",                // allow console.log (useful in dev)
-      "prefer-const": "warn",             // suggest const where possible
-      eqeqeq: ["error", "always"],        // require === instead of ==
+      semi: ["error", "always"],
+      quotes: ["error", "double"],
+      "no-unused-vars": ["warn"],
+      "no-undef": "error",
+      "no-console": "off",
+      "prefer-const": "warn",
+      eqeqeq: ["error", "always"],
     },
   },
 ];
