@@ -28,7 +28,8 @@
     "mongoose": "^8.6.0",
     "morgan": "^1.10.0",
     "multer": "^2.0.2",
-    "uid-safe": "^2.1.5"
+    "uid-safe": "^2.1.5",
+    "wait-on": "^9.0.1"
   },
   "devDependencies": {
     "cross-env": "^10.0.0",
