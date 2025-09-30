@@ -4,7 +4,7 @@ WORKDIR /usr/src/app
 
 COPY package*.json ./
 RUN npm install
-RUN chmod +x node_modules/.bin/eslint
+RUN npm install -g eslint
 
 COPY . .
 
