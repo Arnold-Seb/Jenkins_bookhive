@@ -1,64 +1,55 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_COMPOSE = 'docker-compose -f docker-compose.test.yml'
-    }
-
     stages {
         stage('Checkout') {
             steps {
-                echo "📥 Checking out source code..."
-                checkout scm
+                git branch: 'main', url: 'https://github.com/Arnold-Seb/Jenkins_bookhive.git'
             }
         }
 
         stage('Install') {
             steps {
-                echo "📦 Installing dependencies..."
                 sh 'npm install'
             }
         }
 
-        stage('Lint') {
+        stage('Start MongoDB') {
             steps {
-                echo "🔍 Running ESLint..."
-                sh 'npx eslint . || true'  // don’t fail pipeline on lint warnings
+                script {
+                    // Run MongoDB as a background container for tests
+                    sh 'docker run -d --name mongo-test -p 27017:27017 mongo:7'
+                    // Give it a moment to accept connections
+                    sh 'sleep 10'
+                }
             }
         }
 
         stage('Test') {
             steps {
-                echo "🧪 Running tests in Docker..."
-                sh """
-                  ${DOCKER_COMPOSE} down -v || true
-                  ${DOCKER_COMPOSE} up --build --abort-on-container-exit
-                """
+                sh 'MONGODB_URI_TEST=mongodb://localhost:27017/bookhive_test npm test'
             }
-            post {
-                always {
-                    echo "🧹 Cleaning up Docker containers..."
-                    sh "${DOCKER_COMPOSE} down -v || true"
+        }
+
+        stage('Stop MongoDB') {
+            steps {
+                script {
+                    // Clean up the container so it doesn’t keep running
+                    sh 'docker rm -f mongo-test || true'
                 }
             }
         }
 
         stage('Deploy') {
-            when {
-                branch 'main'
-            }
             steps {
-                echo "🚀 Deployment stage (to be configured)..."
+                echo '🚀 Deploy stage (placeholder)'
             }
         }
     }
 
     post {
-        failure {
-            echo "❌ Pipeline failed. Check logs above."
-        }
-        success {
-            echo "✅ Pipeline completed successfully!"
+        always {
+            echo 'Pipeline finished!'
         }
     }
 }
