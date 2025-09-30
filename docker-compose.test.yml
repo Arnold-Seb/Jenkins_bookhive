@@ -2,17 +2,7 @@ services:
   mongo:
     image: mongo:6
     ports:
-      - "27017:27017"   # main BookHive Mongo
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
-  mongo-test:
-    image: mongo:6
-    ports:
-      - "27018:27017"   # test Mongo uses 27018 externally
+      - "27017:27017"
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 5s
@@ -22,15 +12,14 @@ services:
   test-runner:
     build: .
     depends_on:
-      mongo-test:
+      mongo:
         condition: service_healthy
     environment:
-      - MONGODB_URI_TEST=mongodb://mongo-test:27017/bookhive_test
+      - MONGODB_URI_TEST=mongodb://mongo:27017/bookhive_test
     command: npm test
 
   bookhive:
     build: .
-    container_name: bookhive-pipeline-v2-bookhive
     depends_on:
       - mongo
     environment:
