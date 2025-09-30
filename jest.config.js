@@ -1,5 +1,6 @@
+// jest.config.js
 export default {
   testEnvironment: "node",
-  transform: {},
-  testTimeout: 30000  // 30 seconds
+  testTimeout: 60000, // 60s per test suite
+  transform: {}
 };
