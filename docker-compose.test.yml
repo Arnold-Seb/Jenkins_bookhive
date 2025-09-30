@@ -10,7 +10,7 @@ services:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   bookhive:
     build: .
@@ -20,4 +20,4 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
-    command: sh -c "npx wait-on tcp:mongo:27017 && npm test"
+    command: npm test

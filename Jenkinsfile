@@ -8,7 +8,7 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Install') {
             steps {
                 sh 'npm install'
             }
@@ -17,36 +17,34 @@ pipeline {
         stage('Start Services') {
             steps {
                 echo '🟢 Starting MongoDB + BookHive (test mode)...'
-                sh 'docker-compose -f docker-compose.test.yml up -d'
-                // give Mongo time to initialize
-                sh 'sleep 20'
+                sh 'docker-compose -f docker-compose.test.yml up -d --build'
             }
         }
 
         stage('Run Tests') {
             steps {
-                echo '🧪 Running Jest tests inside Docker Compose...'
+                echo '🧪 Running Jest tests inside BookHive container...'
                 sh 'docker-compose -f docker-compose.test.yml run --rm bookhive'
             }
         }
 
         stage('Stop Services') {
             steps {
-                echo '🛑 Stopping services and cleaning up...'
+                echo '🛑 Cleaning up services...'
                 sh 'docker-compose -f docker-compose.test.yml down -v'
             }
         }
 
         stage('Deploy') {
             steps {
-                echo '🚀 Deploy stage (placeholder)'
+                echo '🚀 Deploy stage (placeholder for real deployment)'
             }
         }
     }
 
     post {
         always {
-            echo '✅ Pipeline finished (cleanup done)'
+            echo '✅ Pipeline finished!'
         }
     }
 }
