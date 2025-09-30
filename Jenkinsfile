@@ -21,6 +21,13 @@ pipeline {
             }
         }
 
+        stage('Cleanup') {
+            steps {
+                echo "🧹 Cleaning up old containers..."
+                sh 'docker compose -f $WORKSPACE/docker-compose.test.yml down -v || true'
+            }
+        }
+
         stage('Start Services') {
             steps {
                 echo "🚀 Starting services with Docker Compose..."
@@ -31,7 +38,7 @@ pipeline {
         stage('Test') {
             steps {
                 echo "🧪 Running Jest tests..."
-                sh 'MONGODB_URI_TEST=mongodb://localhost:27017/bookhive_test npm test'
+                sh 'MONGODB_URI_TEST=mongodb://mongo:27017/bookhive_test npm test'
             }
         }
 

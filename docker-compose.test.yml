@@ -2,8 +2,6 @@ version: "3.8"
 services:
   mongo:
     image: mongo:7
-    ports:
-      - "27017:27017"
     environment:
       MONGO_INITDB_DATABASE: bookhive_test
     healthcheck:
