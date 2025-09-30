@@ -26,7 +26,7 @@ pipeline {
         stage('Code Quality') {
             steps {
                 echo "🔍 Running ESLint..."
-                sh 'eslint src || true'
+                sh 'node ./node_modules/eslint/bin/eslint.js src || true'
             }
         }
 
