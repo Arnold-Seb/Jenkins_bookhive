@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = "bookhive-app"
+        IMAGE_TAG = "latest"
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -39,7 +44,6 @@ pipeline {
         stage('Code Quality Check') {
             steps {
                 echo "🔎 Running ESLint checks..."
-                // Fail build if lint errors exist
                 sh 'npx eslint .'
             }
         }
@@ -51,9 +55,20 @@ pipeline {
             }
         }
 
+        stage('Build Docker Image') {
+            steps {
+                echo "📦 Building application Docker image..."
+                sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
+                sh 'docker images ${IMAGE_NAME}:${IMAGE_TAG}'
+            }
+        }
+
         stage('Deploy') {
             steps {
-                echo '🚀 Deploy stage (placeholder - add your deploy steps here)'
+                echo "🚀 Deploy stage (placeholder - push to registry or deploy to server)"
+                // Example if pushing to DockerHub:
+                // sh 'echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin'
+                // sh 'docker push ${IMAGE_NAME}:${IMAGE_TAG}'
             }
         }
     }
