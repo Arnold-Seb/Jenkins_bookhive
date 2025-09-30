@@ -14,30 +14,39 @@ pipeline {
             }
         }
 
+        stage('Check Docker') {
+            steps {
+                echo '🔍 Checking Docker & Compose versions...'
+                sh 'docker --version'
+                sh 'docker compose version'
+            }
+        }
+
         stage('Start Services') {
             steps {
-                echo '🟢 Starting MongoDB + BookHive (test mode)...'
-                sh 'docker-compose -f docker-compose.test.yml up -d --build'
+                echo '🚀 Starting MongoDB + BookHive (test mode)...'
+                sh 'docker compose -f docker-compose.test.yml up -d --build'
+                // Give MongoDB a little time to be ready
+                sh 'sleep 10'
             }
         }
 
         stage('Run Tests') {
             steps {
-                echo '🧪 Running Jest tests inside BookHive container...'
-                sh 'docker-compose -f docker-compose.test.yml run --rm bookhive'
+                sh 'MONGODB_URI_TEST=mongodb://localhost:27017/bookhive_test npm test'
             }
         }
 
         stage('Stop Services') {
             steps {
-                echo '🛑 Cleaning up services...'
-                sh 'docker-compose -f docker-compose.test.yml down -v'
+                echo '🛑 Stopping test services...'
+                sh 'docker compose -f docker-compose.test.yml down || true'
             }
         }
 
         stage('Deploy') {
             steps {
-                echo '🚀 Deploy stage (placeholder for real deployment)'
+                echo '🚀 Deploy stage (placeholder)'
             }
         }
     }
