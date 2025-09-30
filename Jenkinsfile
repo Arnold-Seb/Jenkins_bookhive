@@ -8,35 +8,32 @@ pipeline {
             }
         }
 
-        stage('Install') {
+        stage('Install Dependencies') {
             steps {
                 sh 'npm install'
             }
         }
 
-        stage('Start MongoDB') {
+        stage('Start Services') {
             steps {
-                script {
-                    // Run MongoDB as a background container for tests
-                    sh 'docker run -d --name mongo-test -p 27017:27017 mongo:7'
-                    // Give it a moment to accept connections
-                    sh 'sleep 10'
-                }
+                echo '🟢 Starting MongoDB + BookHive (test mode)...'
+                sh 'docker-compose -f docker-compose.test.yml up -d'
+                // give Mongo time to initialize
+                sh 'sleep 20'
             }
         }
 
-        stage('Test') {
+        stage('Run Tests') {
             steps {
-                sh 'MONGODB_URI_TEST=mongodb://localhost:27017/bookhive_test npm test'
+                echo '🧪 Running Jest tests inside Docker Compose...'
+                sh 'docker-compose -f docker-compose.test.yml run --rm bookhive'
             }
         }
 
-        stage('Stop MongoDB') {
+        stage('Stop Services') {
             steps {
-                script {
-                    // Clean up the container so it doesn’t keep running
-                    sh 'docker rm -f mongo-test || true'
-                }
+                echo '🛑 Stopping services and cleaning up...'
+                sh 'docker-compose -f docker-compose.test.yml down -v'
             }
         }
 
@@ -49,7 +46,7 @@ pipeline {
 
     post {
         always {
-            echo 'Pipeline finished!'
+            echo '✅ Pipeline finished (cleanup done)'
         }
     }
 }
